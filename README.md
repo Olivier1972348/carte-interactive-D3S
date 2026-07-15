@@ -1,88 +1,87 @@
-# Carte D3S - mode d'emploi simple
+# Carte interactive D3S
 
-Ce dossier sert a mettre a jour et regenerer la carte interactive D3S.
+Ce projet transforme un fichier Excel maintenu manuellement en une carte web des postes ouverts aux élèves D3S. Le fonctionnement courant ne nécessite ni VS Code ni modification du code : il suffit de mettre à jour le tableau Excel puis de régénérer la carte.
 
-Il n'est pas necessaire d'utiliser VSCode, Codex ou un logiciel de developpement.
-Sur Mac, tout se fait en remplacant un fichier Excel puis en double-cliquant sur un script.
+## Mise à jour la plus simple sur Mac
 
-## Ce qu'il faut garder dans le dossier
+1. Ouvrir `data/postes_d3s.xlsx`, onglet `Postes`.
+2. Ajouter ou corriger les lignes du tableau sans renommer les colonnes ni l'onglet.
+3. Enregistrer puis fermer Excel.
+4. Double-cliquer sur `1_GENERER_LA_CARTE.command`.
+5. Contrôler le résumé affiché et la carte ouverte dans le navigateur.
 
-- `data/postes_d3s.xlsx` : le fichier Excel source a mettre a jour.
-- `data/referentiel_finess.csv` : le referentiel FINESS utilise pour ameliorer les coordonnees. Ne pas le modifier.
-- `output/carte_d3s.html` : la carte HTML generee, a ouvrir ou envoyer.
-- `1_GENERER_LA_CARTE.command` : le script a lancer apres chaque mise a jour Excel.
+Lors de la première utilisation, le script crée `.venv` et installe Python localement pour le projet. Une connexion Internet est alors nécessaire. Python 3.11 ou plus récent est requis ; la version de référence est indiquée dans `.python-version`.
 
-## Mise a jour habituelle
+## Classeur de saisie
 
-1. Ouvrir le dossier `data`.
-2. Remplacer `postes_d3s.xlsx` par le nouveau fichier Excel.
-3. Important : le nouveau fichier doit garder exactement le nom `postes_d3s.xlsx`.
-4. Revenir dans le dossier principal.
-5. Double-cliquer sur `1_GENERER_LA_CARTE.command`.
-6. Attendre le message de fin.
-7. La carte s'ouvre automatiquement dans le navigateur.
-8. Le fichier a distribuer est `output/carte_d3s.html`.
+Le classeur a volontairement un seul onglet et 16 colonnes :
 
-Si macOS refuse d'ouvrir le script au premier double-clic, faire clic droit sur le fichier,
-choisir `Ouvrir`, puis confirmer.
+- indispensables : `Actif ?`, `Poste`, `Catégorie`, `Établissement(s)` ;
+- localisation : `Lieu(x) du poste`, `Ville`, `Département`, `Région` ;
+- géocodage : `FINESS`, `Latitude`, `Longitude` ;
+- publication : `Date de parution`, `Source`, `Observations` ;
+- corrections facultatives : `Type de structure`, `Type d'établissement`.
 
-## Premiere utilisation sur un nouveau Mac
+Règles importantes :
 
-Au premier lancement, le script cree un environnement Python local dans `.venv` et installe les dependances.
-Il faut donc etre connecte a Internet.
+- `Actif ? = Non` conserve la ligne dans Excel mais l'exclut de la carte ; une cellule vide est considérée active ;
+- le FINESS doit idéalement contenir 9 chiffres et suffit généralement à trouver les coordonnées ;
+- latitude et longitude peuvent rester vides si le FINESS est reconnu ;
+- sans FINESS reconnu, saisir latitude et longitude ;
+- la date de parution alimente automatiquement les filtres mois/année ;
+- les listes déroulantes du classeur évitent les variantes de catégories.
 
-Les lancements suivants sont plus rapides.
+Le script `scripts/simplify_excel.py` sert uniquement à convertir un ancien export technique à 36 colonnes vers ce format. Il n'est pas nécessaire pour les mises à jour ordinaires.
 
-## Points de controle apres generation
+## Contrôles après génération
 
-Dans la fenetre du script, verifier :
+Le résumé doit notamment afficher :
 
-- `Postes valides avec coordonnees` : nombre de postes affichables sur la carte.
-- `Postes sans coordonnees exploitables` : doit idealement rester bas.
-- `Doublons supprimes` : information utile pour comprendre les ecarts.
+- les lignes lues ;
+- les postes inactifs ou retirés exclus ;
+- les postes valides avec coordonnées ;
+- les postes sans coordonnées exploitables ;
+- les doublons supprimés.
 
-Dans le navigateur, verifier :
+Consulter ensuite `output/postes_sans_coordonnees.csv`. Toute ligne présente doit être corrigée dans Excel avec un FINESS valable ou des coordonnées manuelles.
 
-- le compteur `postes affiches`;
-- la recherche globale;
-- les filtres categorie, type d'etablissement, annee, region, departement;
-- l'ouverture d'une fiche poste en cliquant sur un marqueur.
+Dans la carte, tester la recherche, les filtres, les compteurs et l'ouverture d'une fiche poste.
 
-## Si le fichier Excel change de structure
+## Fichiers produits et diffusion
 
-Le script sait reconnaitre plusieurs noms de colonnes grace au fichier `config/settings.yaml`.
-Si une colonne n'est plus reconnue, demander de l'aide avant de modifier le code.
+La génération crée :
 
-Le nom de l'onglet attendu est configure ici :
+- `output/carte_d3s.html` et `output/index.html` : deux copies identiques de la carte ;
+- `output/postes_valides.csv` : données réellement affichées ;
+- `output/postes_sans_coordonnees.csv` : lignes à corriger ;
+- les assets nécessaires, notamment le logo et la plaquette.
 
-```yaml
-sheet_name: "Postes_enrichis"
+Pour une diffusion hors Render, transmettre le dossier `output` complet dans un ZIP. Ne pas envoyer seulement le fichier HTML : le logo et la plaquette sont des fichiers séparés. La carte nécessite aussi Internet pour charger Leaflet et le fond de carte.
+
+Pour préparer le ZIP complet destiné au collègue, double-cliquer sur `3_CREER_ZIP_TRANSFERT.command`. L'archive créée à la racine exclut `.git`, `.venv`, les caches et les fichiers locaux inutiles.
+
+## Utilisation en ligne de commande
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m unittest discover -v
+python main.py
+python scripts/check_build_output.py
 ```
 
-Si le nouvel Excel utilise un autre nom d'onglet, il faut modifier cette ligne dans `config/settings.yaml`.
+Le build Render utilise simplement :
 
-## Envoi de la carte
-
-Pour distribution, envoyer uniquement :
-
-```text
-output/carte_d3s.html
+```bash
+./build.sh
 ```
 
-La personne qui ouvre la carte doit avoir Internet, car le fond de carte et les bibliotheques Leaflet sont charges en ligne.
+## Dépannage
 
-## Depannage rapide
+- `Onglet 'Postes' introuvable` : ne pas renommer l'onglet Excel.
+- `Aucun poste avec coordonnées exploitables` : renseigner un FINESS reconnu ou latitude/longitude.
+- carte à zéro poste : vérifier `Actif ?`, les coordonnées et `output/postes_sans_coordonnees.csv`.
+- script Mac bloqué par macOS : clic droit sur le fichier `.command`, puis `Ouvrir`.
 
-### Le script indique que Python est introuvable
-
-Installer Python 3 depuis https://www.python.org/downloads/ puis relancer `1_GENERER_LA_CARTE.command`.
-
-### La carte affiche 0 poste
-
-Verifier que `data/postes_d3s.xlsx` contient bien les colonnes de latitude/longitude ou les colonnes FINESS attendues.
-Verifier aussi que l'onglet configure dans `config/settings.yaml` existe dans le fichier Excel.
-
-### La carte ne se charge pas chez un destinataire
-
-Demander au destinataire de verifier sa connexion Internet et d'ouvrir le fichier avec Chrome, Edge, Firefox ou Safari.
-Si le fond de carte semble bloque, renommer le fichier avant envoi, par exemple `carte_d3s_mai_2026.html`, pour eviter un cache navigateur ancien.
+La documentation de reprise complète est dans `docs/PROMPT_REPRISE_CODEX.md` et la procédure détaillée dans `docs/MISE_A_JOUR_DONNEES.md`.

@@ -6,6 +6,3 @@ services:
     buildCommand: ./build.sh
     staticPublishPath: ./output
     autoDeployTrigger: commit
-    envVars:
-      - key: SKIP_INSTALL_DEPS
-        value: "true"

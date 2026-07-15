@@ -24,8 +24,8 @@ def render_map_html(posts: pd.DataFrame, config: dict[str, Any]) -> None:
         raise FileNotFoundError(f"Template HTML introuvable: {template_path}")
 
     records = posts.where(pd.notna(posts), None).to_dict(orient="records")
-    posts_json = json.dumps(records, ensure_ascii=False, separators=(",", ":"))
-    category_colors_json = json.dumps(config["category_colors"], ensure_ascii=False)
+    posts_json = json_for_html(records)
+    category_colors_json = json_for_html(config["category_colors"])
 
     env = Environment(
         loader=FileSystemLoader(template_path.parent),
@@ -58,6 +58,18 @@ def render_map_html(posts: pd.DataFrame, config: dict[str, Any]) -> None:
         logger.info("HTML index genere: %s", index_path)
 
     copy_static_assets(config, output_path.parent)
+
+
+def json_for_html(value: Any) -> str:
+    """Encode du JSON sans permettre de fermer le bloc script HTML."""
+    return (
+        json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
 
 
 def copy_static_assets(config: dict[str, Any], output_dir: Path) -> None:

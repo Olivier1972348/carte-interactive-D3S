@@ -27,6 +27,7 @@ def main() -> int:
 
         logger.info("Resume de generation")
         logger.info("Lignes lues: %s", clean_result.rows_read)
+        logger.info("Postes inactifs ou retires exclus: %s", clean_result.inactive_count)
         logger.info("Postes valides avec coordonnees: %s", clean_result.valid_count)
         logger.info("Postes sans coordonnees exploitables: %s", clean_result.missing_coords_count)
         logger.info("Doublons supprimes: %s", clean_result.duplicates_removed)

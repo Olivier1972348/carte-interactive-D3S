@@ -1,5 +1,5 @@
 input_excel_path: "data/postes_d3s.xlsx"
-sheet_name: "Postes_enrichis"
+sheet_name: "Postes"
 
 output_html_path: "output/carte_d3s.html"
 output_valid_csv_path: "output/postes_valides.csv"
@@ -24,6 +24,13 @@ category_colors:
   "Autre / non précisé": "#64748b"
 
 column_aliases:
+  actif:
+    - actif
+    - actif ?
+    - poste actif
+    - poste_actif
+    - statut poste
+    - statut_poste
   poste:
     - poste
     - intitule du poste
@@ -73,6 +80,11 @@ column_aliases:
     - numero_finess_et
     - numero finess
     - no finess
+  date_parution:
+    - date de parution
+    - date_parution
+    - date jo
+    - date_jo
   mois_parution:
     - mois de parution
     - mois_parution
@@ -142,6 +154,7 @@ column_aliases:
     - texte_source_poste
   type_structure:
     - type structure
+    - type de structure
     - type_structure
     - secteur
     - secteur etablissement

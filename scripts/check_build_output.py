@@ -45,6 +45,13 @@ def main() -> int:
         print("index.html et carte_d3s.html ne contiennent pas le meme HTML.")
         return 1
 
+    plaquette = OUTPUT_DIR / "plaquette-promo.pdf"
+    if plaquette.stat().st_size < 10_000:
+        print(
+            "AVERTISSEMENT: plaquette-promo.pdf semble être un fichier provisoire; "
+            "le remplacer avant diffusion officielle."
+        )
+
     print("Controle du site statique OK.")
     return 0
 
